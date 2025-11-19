@@ -1,0 +1,155 @@
+/* Utils */
+.clearfix:after {
+    content: ' ';
+    display: block;
+    clear: both;
+}
+
+.card {
+    background: var(--surface-card);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    border-radius: var(--content-border-radius);
+
+    &:last-child {
+        margin-bottom: 0;
+    }
+}
+
+.p-toast {
+    &.p-toast-top-right,
+    &.p-toast-top-left,
+    &.p-toast-top-center {
+        top: 100px;
+    }
+}
+
+// /* ======================================================
+//    ÁP DỤNG CHO SAKAII : sidebar + layout main
+//    ====================================================== */
+
+// /* ==== 1) CHROME / WEBKIT ==== */
+
+// /* Ẩn scrollbar mặc định (Chrome) */
+// .layout-sidebar::-webkit-scrollbar,
+// .layout-main-container::-webkit-scrollbar {
+//     width: 0px;        /* ẩn hoàn toàn khi không hover */
+//     background: transparent;
+// }
+
+// /* Khi hover mới hiện */
+// .layout-sidebar:hover::-webkit-scrollbar,
+// .layout-main-container:hover::-webkit-scrollbar {
+//     width: 4px;        /* mỏng - bạn có thể đổi 2px */
+// }
+
+// /* Track */
+// .layout-sidebar::-webkit-scrollbar-track,
+// .layout-main-container::-webkit-scrollbar-track {
+//     background: transparent;
+// }
+
+// /* Thumb (màu trắng) */
+// .layout-sidebar::-webkit-scrollbar-thumb,
+// .layout-main-container::-webkit-scrollbar-thumb {
+//     background: rgba(255, 255, 255, 0.4);   /* trắng mờ */
+//     border-radius: 3px;
+// }
+
+// /* Hover thumb rõ hơn */
+// .layout-sidebar:hover::-webkit-scrollbar-thumb,
+// .layout-main-container:hover::-webkit-scrollbar-thumb {
+//     background: rgba(255, 255, 255, 0.7);
+// }
+
+
+// /* ===== 2) FIREFOX ===== */
+// .layout-sidebar,
+// .layout-main-container {
+//     scrollbar-width: none;   /* ẩn */
+// }
+
+// /* Khi hover mới hiện */
+// .layout-sidebar:hover,
+// .layout-main-container:hover {
+//     scrollbar-width: thin;
+//     scrollbar-color: rgba(255,255,255,0.6) transparent;
+// }
+
+/* 1. Luôn giữ chiều rộng 2px */
+.layout-sidebar::-webkit-scrollbar,
+.layout-wrapper::-webkit-scrollbar,
+.layout-static::-webkit-scrollbar,
+.layout-main-container::-webkit-scrollbar,
+.layout-main::-webkit-scrollbar{
+width: 2px;
+}
+
+/* 2. Nền (track) luôn trong suốt */
+.layout-sidebar::-webkit-scrollbar-track,
+.layout-wrapper::-webkit-scrollbar-track,
+.layout-static::-webkit-scrollbar-track,
+.layout-main-container::-webkit-scrollbar-track,
+.layout-main::-webkit-scrollbar-track{
+background: transparent;
+}
+
+/* 3. Con trượt (thumb) mặc định trong suốt */
+.layout-sidebar::-webkit-scrollbar-thumb,
+.layout-wrapper::-webkit-scrollbar-thumb,
+.layout-static::-webkit-scrollbar-thumb,
+.layout-main-container::-webkit-scrollbar-thumb,
+.layout-main::-webkit-scrollbar-thumb{
+background-color: transparent;
+border-radius: 2px; /* bo góc */
+}
+
+/* 4. Khi HOVER vào khu vực (body hoặc sidebar) thì con trượt mới hiện màu */
+.layout-sidebar:hover::-webkit-scrollbar-thumb,
+.layout-wrapper:hover::-webkit-scrollbar-thumb,
+.layout-static:hover::-webkit-scrollbar-thumb,
+.layout-main-container:hover::-webkit-scrollbar-thumb,
+.layout-main:hover::-webkit-scrollbar-thumb{
+background-color: rgba(255, 255, 255, 0.4); /* màu con trượt khi hover */
+}
+
+/* 5. (Tùy chọn) Khi hover trực tiếp vào con trượt */
+.layout-sidebar:hover::-webkit-scrollbar-thumb:hover,
+.layout-wrapper:hover::-webkit-scrollbar-thumb:hover,
+.layout-static:hover::-webkit-scrollbar-thumb:hover,
+.layout-main-container:hover::-webkit-scrollbar-thumb:hover,
+.layout-main:hover::-webkit-scrollbar-thumb:hover{
+background-color: rgba(255, 255, 255, 0.7);
+}
+
+
+/* ===== 2) FIREFOX ===== */
+
+@-moz-document url-prefix() {
+    /* 1. Luôn đặt là 'thin' để giữ chỗ */
+    .layout-sidebar,
+    .layout-wrapper,
+    .layout-static,
+    .layout-main-container,
+    .layout-main{
+    scrollbar-width: thin;
+    /* 2. Mặc định: con trượt và nền đều trong suốt */
+    scrollbar-color: transparent transparent;
+    }
+
+    /* 3. Khi hover, chỉ hiện con trượt lên */
+    .layout-sidebar:hover,
+    .layout-wrapper:hover,
+    .layout-static:hover,
+    .layout-main-container:hover,
+    .layout-main:hover{
+    /* (Màu con trượt) (Màu nền) */
+    scrollbar-color: rgba(255, 255, 255, 0.6) transparent;
+    }
+}
+
+
+
+
+/* Menu */
+
