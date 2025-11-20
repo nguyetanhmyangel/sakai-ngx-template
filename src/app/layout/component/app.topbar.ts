@@ -45,12 +45,12 @@ import { LayoutService } from '../service/layout.service';
 
         <div class="layout-topbar-actions">
             <div class="layout-config-menu">
-                <button type="button" class="layout-topbar-action layout-topbar-action-highlight" (click)="toggleDarkMode()">
+                <button type="button" class="layout-topbar-action" (click)="toggleDarkMode()">
                     <i [ngClass]="{ 'pi ': true, 'pi-moon': layoutService.isDarkTheme(), 'pi-sun': !layoutService.isDarkTheme() }"></i>
                 </button>
                 <div class="relative">
                     <button
-                        class="layout-topbar-action layout-topbar-action-highlight"
+                        class="layout-topbar-action"
                         pStyleClass="@next"
                         enterFromClass="hidden"
                         enterActiveClass="animate-scalein"
@@ -73,11 +73,11 @@ import { LayoutService } from '../service/layout.service';
                     <!-- Việt Nam -->
                     <button
                         type="button"
-                        class="layout-topbar-action layout-topbar-action-highlight"
+                        class="layout-topbar-action"
                         pTooltip="Tiếng Việt"
                         tooltipPosition="bottom">
                         <span class="fi fi-vn fis"></span>
-                        <span class="hidden xl:inline">Việt Nam</span>
+                        <span class="hidden xl:inline">Vietnamese</span>
                     </button>
 
                     <!-- Nga -->
@@ -91,13 +91,13 @@ import { LayoutService } from '../service/layout.service';
                     </button> -->
                     <button
                         type="button"
-                        class="layout-topbar-action layout-topbar-action-highlight"
+                        class="layout-topbar-action"
                         pTooltip="Русский"
                         tooltipPosition="bottom">
                         <span class="fi fi-us fis"></span>
-                        <span class="hidden xl:inline">Russia</span>
+                        <span class="hidden xl:inline">English</span>
                     </button>
-                    <button type="button" class="layout-topbar-action layout-topbar-action-highlight">
+                    <button type="button" class="layout-topbar-action">
                         <i class="pi pi-user"></i>
                         <span>Profile</span>
                     </button>

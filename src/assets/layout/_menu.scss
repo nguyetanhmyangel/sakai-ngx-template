@@ -9,7 +9,7 @@
     overflow-y: auto;
     user-select: none;
     //top: 6rem; // original
-    top: 4rem; // modified to align with topbar
+    top: 4rem !important; // modified to align with topbar
     //left: 2rem; // original
      left: 0; // modified to add gap from left edge
     transition:
@@ -18,7 +18,7 @@
     background-color: var(--surface-overlay);
     //border-radius: var(--content-border-radius); // original
     //padding: 0.5rem 1.5rem; // original
-    padding: 0.5rem 1.5rem 100px 1.5rem; // modified to add bottom padding
+    padding: 0.5rem 0.5rem 100px 0.5rem; // modified to add bottom padding
     box-shadow: 0.5rem 8px 1rem #2c33491a; // add new - custom shadow
 }
 
