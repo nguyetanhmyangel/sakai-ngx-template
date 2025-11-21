@@ -58,7 +58,7 @@ Angular CLI does not come with an end-to-end testing framework by default. You c
 
 For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
 
-## Customize:
+## Customize
 
 ### . Add shadow for topbar, modifty _topbar.scss 
 
@@ -440,7 +440,70 @@ containerClass() {
     }
 }
 ```
-### Add Loading bar in top layout:
+### Global Loading Bar (Trên cùng): Phải lắng nghe HTTP Request (API) thông qua Interceptor, chứ không chỉ Router. Skeleton Loading (Tại chỗ): Dùng ở từng component để giữ khung layout trong khi chờ dữ liệu cụ thể đổ về.
+
+- Tạo file src/app/layout/service/loading.service.ts:
+
+import { Injectable, signal } from '@angular/core';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class LoadingService {
+  // Dùng Signal để tự động update UI
+  isLoading = signal<boolean>(false);
+  
+  private requestCount = 0;
+
+  show() {
+    this.requestCount++;
+    this.isLoading.set(true);
+  }
+
+  hide() {
+    this.requestCount--;
+    if (this.requestCount <= 0) {
+      this.requestCount = 0;
+      this.isLoading.set(false);
+    }
+  }
+}
+
+- Tạo loadingInterceptor trong file src/app/layout/interceptor/loading.interceptor.ts. Interceptor này sẽ tự động kích hoạt loading mỗi khi gọi HttpClient
+
+import { HttpInterceptorFn } from '@angular/common/http';
+import { inject } from '@angular/core';
+import { finalize } from 'rxjs';
+import { LoadingService } from '../service/loading.service';
+
+export const loadingInterceptor: HttpInterceptorFn = (req, next) => {
+  const loadingService = inject(LoadingService);
+
+  // Bỏ qua các request ngầm không cần loading (nếu cần)
+  // if (req.headers.has('X-Skip-Loading')) return next(req);
+
+  loadingService.show();
+
+  return next(req).pipe(
+    finalize(() => {
+      // Chạy khi API xong (thành công hoặc lỗi đều tắt)
+      loadingService.hide();
+    })
+  );
+};
+
+- Đăng ký Interceptor trong app.config.ts. Vào file app.config.ts (hoặc main.ts nơi bootstrap):
+
+import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
+import { loadingInterceptor } from '@/layout/interceptor/loading.interceptor';
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideRouter(routes, withComponentInputBinding()),
+    // Đăng ký interceptor tại đây
+    provideHttpClient(withInterceptors([loadingInterceptor])), 
+    // ... các provider khác
+  ]
+};
 
 import { ProgressBar } from "primeng/progressbar";
 

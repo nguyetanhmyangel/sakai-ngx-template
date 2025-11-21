@@ -26,9 +26,11 @@ import { ProgressBar } from "primeng/progressbar";
     `],
     template: `<div class="layout-wrapper" [ngClass]="containerClass">
         <!-- Loading Bar (ngx-admin style) -->
-        <div class="layout-loading-bar" [style.display]="isLoading ? 'block' : 'none'">
-            <p-progressBar mode="indeterminate" [style]="{'height': '4px'}"></p-progressBar>
-        </div>
+        @if (isLoading) {
+            <div class="layout-loading-bar">
+                <p-progressBar mode="indeterminate" [style]="{'height': '4px'}"></p-progressBar>
+            </div>
+        }
         <app-topbar></app-topbar>
         <app-sidebar></app-sidebar>
         <div class="layout-main-container">
