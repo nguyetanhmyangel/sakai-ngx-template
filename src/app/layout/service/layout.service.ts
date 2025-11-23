@@ -76,8 +76,6 @@ export class LayoutService {
 
     transitionComplete = signal<boolean>(false);
 
-    sidebarCompact = signal<boolean>(false);
-
     private initialized = false;
 
     constructor() {
@@ -139,35 +137,17 @@ export class LayoutService {
 
     onMenuToggle() {
         if (this.isOverlay()) {
-            // Nếu dùng menuMode = overlay → giữ nguyên logic cũ
-            this.layoutState.update((prev) => ({
-                ...prev,
-                overlayMenuActive: !this.layoutState().overlayMenuActive
-            }));
+            this.layoutState.update((prev) => ({ ...prev, overlayMenuActive: !this.layoutState().overlayMenuActive }));
+
             if (this.layoutState().overlayMenuActive) {
                 this.overlayOpen.next(null);
             }
-            return;
         }
 
-        // === CHỈ ÁP DỤNG CHO menuMode = 'static' (mặc định của Sakai) ===
         if (this.isDesktop()) {
-            // DESKTOP: Chỉ toggle compact mode (ẩn text, giữ icon)
-            this.sidebarCompact.update(value => !value);
-
-            // Reset trạng thái cũ để tránh xung đột
-            this.layoutState.update(prev => ({
-                ...prev,
-                staticMenuDesktopInactive: false,
-                staticMenuMobileActive: false,
-                overlayMenuActive: false
-            }));
+            this.layoutState.update((prev) => ({ ...prev, staticMenuDesktopInactive: !this.layoutState().staticMenuDesktopInactive }));
         } else {
-            // MOBILE/TABLET: Hành vi cũ → ẩn/hiện hoàn toàn
-            this.layoutState.update((prev) => ({
-                ...prev,
-                staticMenuMobileActive: !this.layoutState().staticMenuMobileActive
-            }));
+            this.layoutState.update((prev) => ({ ...prev, staticMenuMobileActive: !this.layoutState().staticMenuMobileActive }));
 
             if (this.layoutState().staticMenuMobileActive) {
                 this.overlayOpen.next(null);
@@ -195,6 +175,4 @@ export class LayoutService {
     reset() {
         this.resetSource.next(true);
     }
-
-    isSidebarCompact = computed(() => this.sidebarCompact());
 }

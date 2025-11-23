@@ -1,71 +1,70 @@
-/* Utils */
-.clearfix:after {
-    content: ' ';
-    display: block;
-    clear: both;
-}
+### . In_topbar.scss modify .layout-topbar selector to add shadow effect 
 
-.card {
-    background: var(--surface-card);
-    padding: 2rem;
-    margin-bottom: 2rem;
-    border-radius: var(--content-border-radius);
+```css
+.layout-topbar {
+    position: fixed;
+    height: 4rem;
+    z-index: 997;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 0 2rem;
+    background-color: var(--surface-card);
+    transition: left var(--layout-section-transition-duration);
+    display: flex;
+    align-items: center;
+    box-shadow: 0 .5rem 1rem #2c33491a; // add new - custom shadow
+ ``` 
 
-    &:last-child {
-        margin-bottom: 0;
-    }
-}
+ ### . In _menu.scss, modify heigh, top, lef, padding of layout-sidebar selector to add shadow effect.
 
-.p-toast {
-    &.p-toast-top-right,
-    &.p-toast-top-left,
-    &.p-toast-top-center {
-        top: 100px;
-    }
-}
-
-/* ================================================
-    CUSTOM SCROLLBAR CHO SIDEBAR VÀ LAYOUT-MAIN-CONTAINER
-   ================================================ */
-
-
-/* Sidebar: Nếu ở chế độ static thì không cần z-index cao */
+```css
 .layout-sidebar {
-    z-index: 996; /* Thấp hơn Topbar 1 đơn vị */
-    /* Các thuộc tính position/height để Sakai tự lo */
-}
-
-/* Ẩn thanh cuộn của body/html để tránh 2 thanh cuộn lồng nhau */
-html, body {
-    overflow: hidden !important;
-    height: 100vh;
-    margin: 0;
-}
-
-/* ============================================================
-   2. CẤU HÌNH THANH CUỘN CHO LAYOUT CHÍNH (NẰM DƯỚI TOPBAR)
-   ============================================================ */
-
-.layout-main-container {
-    /* Quan trọng: Tạo vùng cuộn riêng biệt */
-    height: 100vh;
+    position: fixed;
+    width: 20rem;
+    //height: calc(100vh - 8rem); // original
+    height: 100vh; // modified to fix height issue
+    //z-index: 999; // original
     overflow-y: auto;
-    overflow-x: hidden;
-
-    /* Đẩy nội dung xuống để không bị Topbar che mất */
-    /* Padding-top = Chiều cao Topbar (5rem) + Khoảng cách thêm (2rem) */
-    padding-top: 6rem;
-
-    /* Cài đặt Scrollbar SIÊU MỎNG (2px) cho Main Content */
-    scrollbar-width: thin;
-    scrollbar-color: rgba(160, 160, 160, 0.15) transparent;
+    user-select: none;
+    //top: 6rem; // original
+    top: 3.5rem !important; // modified to align with topbar
+    //left: 2rem; // original
+     left: 0; // modified to add gap from left edge
+    transition:
+        transform var(--layout-section-transition-duration),
+    left var(--layout-section-transition-duration);
+    background-color: var(--surface-overlay);
+    //border-radius: var(--content-border-radius); // original
+    //padding: 0.5rem 1.5rem; // original
+    padding: 0.5rem 0 60px 0.5rem; // modified to add bottom padding
+    box-shadow: 0.5rem 8px 1rem #2c33491a; // add new - custom shadow
 }
 
+.layout-menu {
+    margin: 0;
+    padding: 1.2rem 0 0 0;
+    list-style-type: none;
+}
+```
 
-/* ============================================================
-   GHOST SCROLLBAR (Siêu mỏng - Cực mờ - Không giật)
-   ============================================================ */
+### In _main.scss, modify layout-main-container selector to change padding.
 
+```css
+.layout-main-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    justify-content: space-between;
+    //padding: 6rem 2rem 0 2rem; // original
+    padding: 5.8rem 1.4rem 0 0;
+    transition: margin-left var(--layout-section-transition-duration);
+}
+```
+
+### In Utils.scss, add following css selector to modify scroll of slidebar and layout-main-container:
+
+```css
 /* 1. Cấu hình cơ bản cho Container */
 .layout-main-container,
 .layout-sidebar {
@@ -118,3 +117,6 @@ html, body {
 .layout-sidebar::-webkit-scrollbar-thumb:hover {
     background-color: rgba(160, 160, 160, 0.35) !important;
 }
+```
+
+

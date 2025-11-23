@@ -1,36 +1,17 @@
-import { ChangeDetectorRef, Component, Renderer2, ViewChild } from '@angular/core';
+import { Component, Renderer2, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { NavigationCancel, NavigationEnd, NavigationError, NavigationStart, Router, RouterModule } from '@angular/router';
+import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { filter, Subscription } from 'rxjs';
 import { AppTopbar } from './app.topbar';
 import { AppSidebar } from './app.sidebar';
 import { AppFooter } from './app.footer';
 import { LayoutService } from '../service/layout.service';
-import { ProgressBar } from "primeng/progressbar";
 
 @Component({
     selector: 'app-layout',
     standalone: true,
-    imports: [CommonModule, AppTopbar, AppSidebar, RouterModule, AppFooter, ProgressBar],
-    styles: [`
-        .layout-loading-bar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 6px; /* Cho to ra để dễ nhìn */
-            z-index: 999999; /* Z-index cực cao */
-            background: none; /* Màu đỏ để debug */
-            transition: all 0.3s;
-        }
-    `],
+    imports: [CommonModule, AppTopbar, AppSidebar, RouterModule, AppFooter],
     template: `<div class="layout-wrapper" [ngClass]="containerClass">
-        <!-- Loading Bar (ngx-admin style) -->
-        @if (isLoading) {
-            <div class="layout-loading-bar">
-                <p-progressBar mode="indeterminate" [style]="{'height': '4px'}"></p-progressBar>
-            </div>
-        }
         <app-topbar></app-topbar>
         <app-sidebar></app-sidebar>
         <div class="layout-main-container">
@@ -44,9 +25,8 @@ import { ProgressBar } from "primeng/progressbar";
 })
 export class AppLayout {
     overlayMenuOpenSubscription: Subscription;
-    menuOutsideClickListener: any;
 
-    isLoading = true;
+    menuOutsideClickListener: any;
 
     @ViewChild(AppSidebar) appSidebar!: AppSidebar;
 
@@ -55,32 +35,8 @@ export class AppLayout {
     constructor(
         public layoutService: LayoutService,
         public renderer: Renderer2,
-        public router: Router,
-        private cd: ChangeDetectorRef
+        public router: Router
     ) {
-        // Xử lý Loading Bar
-        this.router.events.subscribe((event) => {
-            if (event instanceof NavigationStart) {
-                console.log('START LOADING');
-                this.isLoading = true;
-                // Mẹo: Nếu cần force update ở OnPush
-                this.cd.markForCheck();
-                this.cd.detectChanges();
-            }
-            else if (
-                event instanceof NavigationEnd ||
-                event instanceof NavigationCancel ||
-                event instanceof NavigationError
-            ) {
-                console.log('END LOADING - Waiting 1s...');
-                // Delay 1 giây để mắt kịp nhìn thấy
-                setTimeout(() => {
-                    this.isLoading = false;
-                    this.cd.markForCheck();
-                }, 1300);
-            }
-        });
-
         this.overlayMenuOpenSubscription = this.layoutService.overlayOpen$.subscribe(() => {
             if (!this.menuOutsideClickListener) {
                 this.menuOutsideClickListener = this.renderer.listen('document', 'click', (event) => {
@@ -139,9 +95,7 @@ export class AppLayout {
             'layout-static': this.layoutService.layoutConfig().menuMode === 'static',
             'layout-static-inactive': this.layoutService.layoutState().staticMenuDesktopInactive && this.layoutService.layoutConfig().menuMode === 'static',
             'layout-overlay-active': this.layoutService.layoutState().overlayMenuActive,
-            'layout-mobile-active': this.layoutService.layoutState().staticMenuMobileActive,
-            // Thêm class này để CSS nhận diện chế độ Compact
-            'layout-sidebar-compact': this.layoutService.isSidebarCompact()
+            'layout-mobile-active': this.layoutService.layoutState().staticMenuMobileActive
         };
     }
 

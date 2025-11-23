@@ -1,48 +1,16 @@
-import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
-import { ApplicationConfig, isDevMode, provideZoneChangeDetection } from '@angular/core';
-//import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
+import { provideHttpClient, withFetch } from '@angular/common/http';
+import { ApplicationConfig } from '@angular/core';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideRouter, withEnabledBlockingInitialNavigation, withInMemoryScrolling } from '@angular/router';
 import Aura from '@primeuix/themes/aura';
 import { providePrimeNG } from 'primeng/config';
 import { appRoutes } from './app.routes';
-import { provideAnimations } from '@angular/platform-browser/animations';
-import { provideTransloco } from '@jsverse/transloco';
-import { TranslocoHttpLoader } from './transloco-loader';
-import { loadingInterceptor } from '@/layout/interceptor/loading.interceptor';
-
 
 export const appConfig: ApplicationConfig = {
     providers: [
-        // Tối ưu hóa change detection
-        provideZoneChangeDetection({ eventCoalescing: true }),
-
-        // Router chuẩn Angular Standalone
-        provideRouter(
-            appRoutes, withInMemoryScrolling({ anchorScrolling: 'enabled', scrollPositionRestoration: 'enabled' }), withEnabledBlockingInitialNavigation()),
-
-        // HTTP Client với loadingInterceptor
-        provideHttpClient(withInterceptors([loadingInterceptor])),
-
-        // HTTP Client chuẩn Angular
+        provideRouter(appRoutes, withInMemoryScrolling({ anchorScrolling: 'enabled', scrollPositionRestoration: 'enabled' }), withEnabledBlockingInitialNavigation()),
         provideHttpClient(withFetch()),
-
-        // Animation chính thức – thay cho provideAnimationsAsync() đã deprecated
-        provideAnimations(),
-
-        // Cấu hình PrimeNG với theme Aura và hỗ trợ dark mode
-        providePrimeNG({ theme: { preset: Aura, options: { darkModeSelector: '.app-dark' } } }),
-
-        // Cấu hình Transloco
-        provideTransloco({
-            config: {
-                availableLangs: ['en', 'vi', 'ru'],
-                // Lấy ngôn ngữ từ localStorage, mặc định là 'vi'
-                defaultLang: localStorage.getItem('lang') || 'vi',
-                // Render lại khi đổi ngôn ngữ
-                reRenderOnLangChange: true,
-                prodMode: !isDevMode(),
-            },
-            loader: TranslocoHttpLoader
-        })
+        provideAnimationsAsync(),
+        providePrimeNG({ theme: { preset: Aura, options: { darkModeSelector: '.app-dark' } } })
     ]
 };
