@@ -28,7 +28,6 @@
     CUSTOM SCROLLBAR CHO SIDEBAR VÀ LAYOUT-MAIN-CONTAINER
    ================================================ */
 
-
 /* Sidebar: Nếu ở chế độ static thì không cần z-index cao */
 .layout-sidebar {
     z-index: 996; /* Thấp hơn Topbar 1 đơn vị */
@@ -54,11 +53,15 @@ html, body {
 
     /* Đẩy nội dung xuống để không bị Topbar che mất */
     /* Padding-top = Chiều cao Topbar (5rem) + Khoảng cách thêm (2rem) */
-    padding-top: 6rem;
+    padding-top: 7rem;
 
     /* Cài đặt Scrollbar SIÊU MỎNG (2px) cho Main Content */
     scrollbar-width: thin;
     scrollbar-color: rgba(160, 160, 160, 0.15) transparent;
+    /* Transition cho margin-left (đẩy ra/vào) và padding (khoảng hở) */
+    transition:
+        margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+        padding 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
 
@@ -117,4 +120,249 @@ html, body {
 .layout-main-container::-webkit-scrollbar-thumb:hover,
 .layout-sidebar::-webkit-scrollbar-thumb:hover {
     background-color: rgba(160, 160, 160, 0.35) !important;
+}
+
+/* ==========================================================================
+   Modify compact menu
+   ========================================================================== */
+
+/* Topbar: Nằm trên Sidebar nhưng dưới Dialog/Toast */
+.layout-topbar {
+    position: fixed;
+    height: 5rem; /* Chiều cao cố định của Topbar Sakai */
+    z-index: 999 !important; /* Cao hơn Sidebar (998) */
+    top: 0;
+    left: 0;
+    width: 100%;
+}
+
+/* Sidebar: Luôn nằm dưới Topbar */
+.layout-sidebar {
+    z-index: 998 !important; /* Thấp hơn Topbar */
+    top: 5rem !important; /* Đẩy xuống bằng chiều cao Topbar để không đè lên */
+    height: calc(100vh - 5rem) !important; /* Chiều cao còn lại */
+    /* QUAN TRỌNG: Transition phải luôn hiện diện ở trạng thái gốc */
+    transition:
+        width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+        left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ============================================================
+   2. LOGIC COMPACT (DESKTOP >= 992px)
+   ============================================================ */
+@media screen and (min-width: 992px) {
+
+    /* 1. CẤU HÌNH SIDEBAR KHI THU GỌN */
+    .layout-wrapper.layout-sidebar-compact .layout-sidebar {
+        width: 60px !important; /* Sidebar nhỏ 60px */
+        padding: 0;
+        overflow: hidden;
+        border-right: 1px solid var(--surface-border);
+        /* Giữ nguyên transition để lúc co vào mượt */
+        transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+        /* Đảm bảo sidebar nằm dưới Topbar */
+        z-index: 998 !important;
+        top: 5rem !important;
+        height: calc(100vh - 5rem) !important;
+    }
+
+    /* Đẩy nội dung chính sang phải đúng 60px */
+    .layout-wrapper.layout-sidebar-compact .layout-main-container {
+        /* Cách lề trái 60px (để né sidebar) */
+        margin-left: 60px !important;
+
+        /* Padding bên trong: Số cuối cùng '2rem' tạo khoảng trắng giữa nội dung và mép container */
+        padding: 7rem 1.4rem 0 2rem !important;
+
+        /* Transition lúc co vào */
+        transition:
+            margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+            padding 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Ẩn các thành phần Text/Arrow */
+    .layout-wrapper.layout-sidebar-compact .layout-sidebar .layout-menuitem-text,
+    .layout-wrapper.layout-sidebar-compact .layout-sidebar .layout-submenu-toggler,
+    .layout-wrapper.layout-sidebar-compact .layout-sidebar .layout-menuitem-root-text,
+    .layout-wrapper.layout-sidebar-compact .layout-sidebar .sidebar-logo span {
+        opacity: 0;
+        pointer-events: none; /* Không cho click khi đã ẩn */
+        width: 0; /* Thu nhỏ width về 0 để tránh chiếm chỗ */
+        display: none; /* Vẫn cần display none để chắc chắn mất hẳn sau khi co xong */
+    }
+
+    /* Căn giữa Icon trong ô 60px */
+    .layout-wrapper.layout-sidebar-compact .layout-sidebar .layout-menu ul li a {
+        padding-left: 0;
+        padding-right: 0;
+        justify-content: center;
+        height: 45px; /* Chiều cao ô menu để icon cân đối */
+    }
+
+    .layout-wrapper.layout-sidebar-compact .layout-sidebar .layout-menu ul li a .layout-menuitem-icon {
+        margin-right: 0 !important;
+        font-size: 1.4rem; /* Icon to hơn chút cho đẹp */
+    }
+
+    /* --- SIDEBAR HOVER (MỞ RỘNG TẠM THỜI) --- */
+    .layout-wrapper.layout-sidebar-compact .layout-sidebar:hover {
+        width: 18rem !important; /* Mở rộng ra */
+        box-shadow: 10px 0 30px rgba(0, 0, 0, 0.1);
+        overflow-y: auto !important;
+        transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Transition khi hover */
+    }
+
+    /* Hiện lại Text khi Hover */
+    .layout-wrapper.layout-sidebar-compact .layout-sidebar:hover .layout-menuitem-text,
+    .layout-wrapper.layout-sidebar-compact .layout-sidebar:hover .layout-submenu-toggler,
+    .layout-wrapper.layout-sidebar-compact .layout-sidebar:hover .sidebar-logo span {
+        display: inline-block !important;
+        opacity: 1;
+        width: auto;
+        pointer-events: auto;
+        animation: fadeIn 0.2s forwards;
+        transition-delay: 0.1s;
+    }
+
+    .layout-wrapper.layout-sidebar-compact .layout-sidebar:hover .layout-menuitem-root-text {
+        display: block !important; opacity: 1; padding-left: 1rem; margin-top: 1rem; animation: fadeIn 0.2s forwards;
+    }
+
+    /* Trả lại style thẻ a */
+    .layout-wrapper.layout-sidebar-compact .layout-sidebar:hover .layout-menu ul li a {
+        justify-content: flex-start; padding: 0.75rem 1rem; height: auto;
+    }
+    .layout-wrapper.layout-sidebar-compact .layout-sidebar:hover .layout-menu ul li a .layout-menuitem-icon {
+        margin-right: 0.5rem !important;
+    }
+}
+
+/* Animation */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateX(-5px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+/* ============================================================
+   3. MOBILE FIX (DƯỚI 992px)
+   ============================================================ */
+// @media screen and (max-width: 991px) {
+
+//     /* Trả lại Sidebar Full chuẩn cho Mobile */
+//     .layout-wrapper.layout-sidebar-compact .layout-sidebar {
+//         width: 18rem !important; /* Khớp với độ rộng desktop mở rộng */
+//         top: 0 !important; /* Mobile thì Sidebar full từ đỉnh */
+//         height: 100vh !important;
+//         transform: translateX(-100%); /* Mặc định ẩn sang trái */
+//         background-color: var(--surface-overlay);
+//         border-right: none;
+//     }
+
+//     /* Khi active mobile: Hiện lên trên cùng (che cả topbar mobile nếu cần) */
+//     .layout-wrapper.layout-mobile-active .layout-sidebar {
+//         transform: translateX(0) !important;
+//         z-index: 1101 !important; /* Mobile thì cần đè lên Mask (1100) */
+//     }
+
+//     /* Mask (lớp phủ đen) */
+//     .layout-mask {
+//         z-index: 1100 !important;
+//     }
+
+//     /* Reset margin của nội dung */
+//     .layout-wrapper.layout-sidebar-compact .layout-main-container {
+//         margin-left: 0 !important;
+//     }
+
+//     /* Ép hiển thị lại nội dung text */
+//     .layout-wrapper.layout-sidebar-compact .layout-sidebar .layout-menuitem-text,
+//     .layout-wrapper.layout-sidebar-compact .layout-sidebar .layout-submenu-toggler,
+//     .layout-wrapper.layout-sidebar-compact .layout-sidebar .layout-menuitem-root-text,
+//     .layout-wrapper.layout-sidebar-compact .layout-sidebar .sidebar-logo span {
+//         display: inline-block !important;
+//         opacity: 1 !important;
+//     }
+
+//     .layout-wrapper.layout-sidebar-compact .layout-sidebar .layout-menu ul li a {
+//         justify-content: flex-start !important;
+//         padding: 0.75rem 1rem !important;
+//     }
+// }
+
+@media screen and (max-width: 991px) {
+
+    /* 1. CẤU HÌNH SIDEBAR MOBILE (MẶC ĐỊNH) */
+    .layout-sidebar {
+        /* Vị trí: Đè lên Topbar và sát mép trên */
+        top: 0 !important;           /* Quan trọng: Reset lại 5rem của desktop */
+        height: 100vh !important;    /* Full chiều cao màn hình */
+        z-index: 1101 !important;    /* Cao hơn Mask (1100) và Topbar (999) */
+
+        /* Trạng thái ẩn: Trượt sang trái */
+        transform: translateX(-100%);
+        left: 0 !important;
+        width: 18rem !important;     /* Độ rộng chuẩn mobile */
+
+        /* Reset border/shadow của desktop compact */
+        border-right: none;
+        box-shadow: none;
+
+        /* Transition mượt khi trượt ra/vào */
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* 2. KHI MENU ĐƯỢC KÍCH HOẠT (ACTIVE) */
+    /* Angular Sakai sẽ thêm class .layout-mobile-active vào wrapper khi bấm nút */
+    .layout-wrapper.layout-mobile-active .layout-sidebar {
+        transform: translateX(0) !important; /* Trượt vào màn hình */
+        box-shadow: 0 0 50px rgba(0,0,0,0.5); /* Tạo bóng đổ đè lên nội dung cho đẹp */
+    }
+
+    /* 3. LỚP MASK (MÀN ĐEN MỜ CHE NỘI DUNG) */
+    .layout-mask {
+        z-index: 1100 !important; /* Thấp hơn Sidebar (1101) nhưng cao hơn Topbar (999) */
+        background-color: rgba(0, 0, 0, 0.4); /* Màu đen mờ */
+
+        /* Đảm bảo phủ kín màn hình */
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    /* 4. RESET CÁC LOGIC COMPACT CỦA DESKTOP (AN TOÀN) */
+    /* Đề phòng trường hợp đang ở compact desktop rồi resize trình duyệt nhỏ lại */
+
+    .layout-wrapper.layout-sidebar-compact .layout-sidebar {
+        /* Trả lại thuộc tính mobile, không cho logic compact can thiệp */
+        width: 18rem !important;
+        background-color: var(--surface-overlay);
+        overflow-y: auto !important;
+
+        /* Ép hiển thị lại text/icon bị ẩn bởi compact */
+        .layout-menuitem-text,
+        .layout-submenu-toggler,
+        .layout-menuitem-root-text,
+        .sidebar-logo span {
+            display: inline-block !important;
+            opacity: 1 !important;
+            width: auto !important;
+            pointer-events: auto !important;
+        }
+
+        /* Trả lại padding link */
+        .layout-menu ul li a {
+            justify-content: flex-start !important;
+            padding: 0.75rem 1rem !important;
+        }
+    }
+
+    /* Reset Margin của nội dung chính (không bị thụt vào) */
+    .layout-main-container,
+    .layout-wrapper.layout-sidebar-compact .layout-main-container {
+        margin-left: 0 !important;
+        padding-left: 1.4rem !important; /* Padding chuẩn mobile */
+    }
 }

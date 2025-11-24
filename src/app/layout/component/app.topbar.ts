@@ -12,7 +12,10 @@ import { LayoutService } from '../service/layout.service';
     imports: [RouterModule, CommonModule, StyleClassModule, AppConfigurator],
     template: ` <div class="layout-topbar">
         <div class="layout-topbar-logo-container">
-            <button class="layout-menu-button layout-topbar-action" (click)="layoutService.onMenuToggle()">
+            <button
+                class="layout-menu-button layout-topbar-action"
+                (click)="onMenuClick()"
+                [class.spin]="isSpinning">
                 <i class="pi pi-bars"></i>
             </button>
             <a class="layout-topbar-logo" routerLink="/">
@@ -83,10 +86,24 @@ import { LayoutService } from '../service/layout.service';
 })
 export class AppTopbar {
     items!: MenuItem[];
+    isSpinning = false;
+
 
     constructor(public layoutService: LayoutService) {}
 
     toggleDarkMode() {
         this.layoutService.layoutConfig.update((state) => ({ ...state, darkTheme: !state.darkTheme }));
+    }
+
+    // Gọi hàm này thay vì gọi trực tiếp onMenuToggle()
+    onMenuClick() {
+        this.isSpinning = true;
+
+        this.layoutService.onMenuToggle();
+
+        // Tắt class spin sau 0.6s (thời gian animation)
+        setTimeout(() => {
+            this.isSpinning = false;
+        }, 600);
     }
 }

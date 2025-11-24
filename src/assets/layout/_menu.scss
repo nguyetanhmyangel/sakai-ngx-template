@@ -7,14 +7,15 @@
     height: 100vh; // modified to fix height issue
     //z-index: 999; // original
     overflow-y: auto;
+    overflow-x: hidden; /* Quan trọng để ẩn nội dung thừa khi co */
     user-select: none;
     //top: 6rem; // original
     top: 3.5rem !important; // modified to align with topbar
     //left: 2rem; // original
      left: 0; // modified to add gap from left edge
-    transition:
-        transform var(--layout-section-transition-duration),
-    left var(--layout-section-transition-duration);
+    //transition: transform var(--layout-section-transition-duration), left var(--layout-section-transition-duration);
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Animation mượt */
+
     background-color: var(--surface-overlay);
     //border-radius: var(--content-border-radius); // original
     //padding: 0.5rem 1.5rem; // original
@@ -73,9 +74,19 @@
             cursor: pointer;
             padding: 0.75rem 1rem;
             border-radius: var(--content-border-radius);
+            // transition:
+            //     background-color var(--element-transition-duration),
+            //     box-shadow var(--element-transition-duration);
+
+            /* Khóa cứng chiều cao và không cho text xuống dòng */
+            white-space: nowrap; /* Cấm xuống dòng tuyệt đối */
+            overflow: hidden;    /* Ẩn phần thừa */
+
+            /* Thêm transition cho padding nếu bạn có thay đổi padding khi co */
             transition:
                 background-color var(--element-transition-duration),
-                box-shadow var(--element-transition-duration);
+                box-shadow var(--element-transition-duration),
+                padding 0.3s;
 
             .layout-menuitem-icon {
                 margin-right: 0.5rem;
@@ -163,3 +174,16 @@
     overflow: hidden;
     transition: max-height 1s ease-in-out;
 }
+
+// /* 3. Text & Icon trong Menu: Xử lý để không bị vỡ dòng khi co lại */
+// .layout-menu ul li a {
+//     white-space: nowrap; /* CẤM xuống dòng */
+//     overflow: hidden;    /* Ẩn phần thừa */
+// }
+
+// .layout-menuitem-text,
+// .layout-submenu-toggler,
+// .sidebar-logo span {
+//     transition: opacity 0.2s ease-in-out; /* Fade text mượt */
+//     opacity: 1; /* Mặc định hiện */
+// }
