@@ -700,6 +700,92 @@ export class LoadingService {
 
 - Create loading interceptor to automatically trigger Loading Service when calling API and register this interceptor in app.config.ts
 
+```ts
+import { HttpInterceptorFn } from '@angular/common/http';
+import { inject } from '@angular/core';
+import { finalize } from 'rxjs';
+import { LoadingService } from '../service/loading.service';
 
 
+export const LoadingInterceptor: HttpInterceptorFn = (req, next) => {
+  const loadingService = inject(LoadingService);
 
+  // (Optional) Bỏ qua loading nếu request có header 'X-Skip-Loading'
+  if (req.headers.has('X-Skip-Loading')) {
+    return next(req);
+  }
+
+  // 1. Bật Loading
+  loadingService.show();
+
+  return next(req).pipe(
+    // 2. Tắt Loading khi xong (dù thành công hay lỗi)
+    finalize(() => {
+      loadingService.hide();
+    })
+  );
+};
+```
+
+- Register the Interceptor in app.config.ts
+
+```ts
+ 
+import { LoadingInterceptor } from '@/layout/interceptor/loading.interceptor';
+export const appConfig: ApplicationConfig = {
+    providers: [
+        // ...
+
+        provideHttpClient(
+            withInterceptors([LoadingInterceptor]), // Cấu hình Interceptor
+            withFetch()                             // Sử dụng Fetch API chuẩn
+        ),
+
+        // ..
+};
+
+```
+
+- in app.layout.ts add a loading bar and style to it :
+
+```ts
+@Component({
+    selector: 'app-layout',
+    standalone: true,
+    imports: [CommonModule, AppTopbar, AppSidebar, RouterModule, AppFooter, ProgressBar],
+    styles: [`
+        .layout-loading-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 99999; /* Cao hơn tất cả */
+            height: 3px;
+        }
+        /* Force style cho ProgressBar */
+        :host ::ng-deep .p-progressbar {
+            height: 3px !important;
+            border-radius: 0 !important;
+        }
+        :host ::ng-deep .p-progressbar .p-progressbar-value {
+            background: var(--primary-color) !important;
+        }
+    `],
+    template: `<div class="layout-wrapper" [ngClass]="containerClass">
+        <!-- Loading Bar (ngx-admin style) -->
+        <div class="layout-loading-bar"
+            [style.display]="(loadingService.isLoading() || isRouterLoading) ? 'block' : 'none'">
+            <p-progressBar mode="indeterminate" [style]="{'height': '4px'}"></p-progressBar>
+        </div>
+        <app-topbar></app-topbar>
+        <app-sidebar></app-sidebar>
+        <div class="layout-main-container">
+            <div class="layout-main">
+                <router-outlet></router-outlet>
+            </div>
+            <app-footer></app-footer>
+        </div>
+        <div class="layout-mask animate-fadein"></div>
+    </div> `
+})
+```

@@ -11,6 +11,24 @@ import { LayoutService } from '../service/layout.service';
     selector: 'app-layout',
     standalone: true,
     imports: [CommonModule, AppTopbar, AppSidebar, RouterModule, AppFooter],
+    styles: [`
+        .layout-loading-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 99999; /* Cao hơn tất cả */
+            height: 3px;
+        }
+        /* Force style cho ProgressBar */
+        :host ::ng-deep .p-progressbar {
+            height: 3px !important;
+            border-radius: 0 !important;
+        }
+        :host ::ng-deep .p-progressbar .p-progressbar-value {
+            background: var(--primary-color) !important;
+        }
+    `],
     template: `<div class="layout-wrapper" [ngClass]="containerClass">
         <app-topbar></app-topbar>
         <app-sidebar></app-sidebar>
@@ -27,6 +45,13 @@ export class AppLayout {
     overlayMenuOpenSubscription: Subscription;
 
     menuOutsideClickListener: any;
+
+    // trạng thái loading của router
+    isRouterLoading = false;
+    // trạng thái hiển thị thanh loading
+    isLoadingBarVisible = false;
+    // timer để delay hiển thị thanh loading, ít nhất 500ms (tránh flicker)
+    private hideTimer: any;
 
     @ViewChild(AppSidebar) appSidebar!: AppSidebar;
 
