@@ -3,19 +3,19 @@ import { inject } from '@angular/core';
 import { finalize } from 'rxjs';
 import { LoadingService } from '../service/loading.service';
 
-export const loadingInterceptor: HttpInterceptorFn = (req, next) => {
+export const LoadingInterceptor: HttpInterceptorFn = (req, next) => {
   const loadingService = inject(LoadingService);
 
-  // (Optional) Bỏ qua loading nếu request có header 'X-Skip-Loading'
+  // Bỏ qua nếu có header đặc biệt
   if (req.headers.has('X-Skip-Loading')) {
     return next(req);
   }
 
-  // 1. show loading bar
+  // 1. Báo Service bắt đầu
   loadingService.apiStart();
 
   return next(req).pipe(
-    // 2.  hide loading bar
+    // 2. Báo Service kết thúc (thành công hay lỗi đều chạy)
     finalize(() => {
       loadingService.apiEnd();
     })

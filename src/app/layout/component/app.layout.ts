@@ -6,30 +6,42 @@ import { AppTopbar } from './app.topbar';
 import { AppSidebar } from './app.sidebar';
 import { AppFooter } from './app.footer';
 import { LayoutService } from '../service/layout.service';
+import { LoadingService } from '../service/loading.service';
 
 @Component({
     selector: 'app-layout',
     standalone: true,
     imports: [CommonModule, AppTopbar, AppSidebar, RouterModule, AppFooter],
     styles: [`
-        .layout-loading-bar {
+        /* CSS cho thanh Loading Bar mượt mà */
+        .loading-bar {
+            height: 3px;
+            width: 100%;
+            /* Gradient màu xanh hiện đại */
+            background: linear-gradient(90deg, #3B82F6, #06B6D4);
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            z-index: 99999; /* Cao hơn tất cả */
-            height: 3px;
+            z-index: 99999; /* Luôn nổi trên cùng */
+
+            /* Hiệu ứng mờ dần và co dãn */
+            opacity: 0;
+            transform: scaleX(0);
+            transform-origin: left center;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+
+            /* Cho phép click xuyên qua khi đang fade-out */
+            pointer-events: none;
         }
-        /* Force style cho ProgressBar */
-        :host ::ng-deep .p-progressbar {
-            height: 3px !important;
-            border-radius: 0 !important;
-        }
-        :host ::ng-deep .p-progressbar .p-progressbar-value {
-            background: var(--primary-color) !important;
+        /* Class kích hoạt hiển thị */
+        .loading-bar.show {
+            opacity: 1;
+            transform: scaleX(1);
         }
     `],
-    template: `<div class="layout-wrapper" [ngClass]="containerClass">
+    template: `
+    <div class="loading-bar" [class.show]="loadingService.isVisible()"></div>
+    <div class="layout-wrapper" [ngClass]="containerClass">
         <app-topbar></app-topbar>
         <app-sidebar></app-sidebar>
         <div class="layout-main-container">
@@ -46,13 +58,6 @@ export class AppLayout {
 
     menuOutsideClickListener: any;
 
-    // trạng thái loading của router
-    isRouterLoading = false;
-    // trạng thái hiển thị thanh loading
-    isLoadingBarVisible = false;
-    // timer để delay hiển thị thanh loading, ít nhất 500ms (tránh flicker)
-    private hideTimer: any;
-
     @ViewChild(AppSidebar) appSidebar!: AppSidebar;
 
     @ViewChild(AppTopbar) appTopBar!: AppTopbar;
@@ -60,7 +65,8 @@ export class AppLayout {
     constructor(
         public layoutService: LayoutService,
         public renderer: Renderer2,
-        public router: Router
+        public router: Router,
+        public loadingService: LoadingService
     ) {
         this.overlayMenuOpenSubscription = this.layoutService.overlayOpen$.subscribe(() => {
             if (!this.menuOutsideClickListener) {
@@ -76,6 +82,7 @@ export class AppLayout {
             }
         });
 
+        // ẩn Menu khi chuyển trang
         this.router.events.pipe(filter((event) => event instanceof NavigationEnd)).subscribe(() => {
             this.hideMenu();
         });

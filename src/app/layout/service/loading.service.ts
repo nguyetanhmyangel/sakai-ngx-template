@@ -1,6 +1,4 @@
-
-
-import { Injectable, signal, computed, inject } from '@angular/core';
+import { Injectable, signal, inject } from '@angular/core';
 import { Router, NavigationStart, NavigationEnd, NavigationCancel, NavigationError } from '@angular/router';
 
 @Injectable({
@@ -9,13 +7,17 @@ import { Router, NavigationStart, NavigationEnd, NavigationCancel, NavigationErr
 export class LoadingService {
   private router = inject(Router);
 
-  // --- CONFIG (Chỉnh ở đây dùng cho toàn App) ---
-  private readonly ROUTER_DEBOUNCE = 120; // Chuyển trang nhanh < 120ms thì ko hiện
-  private readonly MIN_DISPLAY_TIME = 300; // Đã hiện là hiện ít nhất 300ms
-  private readonly MAX_DISPLAY_TIME = 10000; // Tự tắt sau 10s (Safety)
+  // --- CONFIG ---
+  // Đặt về 0 để hiện NGAY LẬP TỨC khi bấm chuyển trang
+  private readonly ROUTER_DEBOUNCE = 80;
+
+  // Thời gian hiển thị tối thiểu (ms).
+  // Dù trang load xong trong 1ms, thanh bar vẫn sẽ hiện trong 500ms rồi mới tắt.
+  private readonly MIN_DISPLAY_TIME = 500;
+
+  private readonly MAX_DISPLAY_TIME = 10000; // Tự tắt sau 10s
 
   // --- STATE ---
-  // Signal này dành cho UI binding (đã qua xử lý timer)
   readonly isVisible = signal<boolean>(false);
 
   // Logic nội bộ
@@ -28,11 +30,10 @@ export class LoadingService {
   private maxDisplayTimer: any = null;
 
   constructor() {
-    // Tự động lắng nghe Router ngay khi App khởi động
     this.listenToRouter();
   }
 
-  // --- API METHODS (Gọi từ Interceptor) ---
+  // --- API METHODS ---
   apiStart() {
     this.apiRequestCount++;
     this.updateState();
@@ -49,26 +50,23 @@ export class LoadingService {
   private listenToRouter() {
     this.router.events.subscribe(event => {
       if (event instanceof NavigationStart) {
-        clearTimeout(this.routerDebounceTimer);
-        // Debounce: Chờ một chút mới tính là đang load
-        this.routerDebounceTimer = setTimeout(() => {
-          this.isRouterLoading = true;
-          this.updateState();
-        }, this.ROUTER_DEBOUNCE);
+        // Khi bắt đầu chuyển trang -> Bật Loading NGAY (vì debounce = 0)
+        this.isRouterLoading = true;
+        this.updateState();
       }
 
       if (event instanceof NavigationEnd ||
           event instanceof NavigationCancel ||
           event instanceof NavigationError) {
-        clearTimeout(this.routerDebounceTimer);
+
         this.isRouterLoading = false;
         this.updateState();
       }
     });
   }
 
-  // Hàm quyết định có hiện Bar hay không
   private updateState() {
+    // Chỉ cần 1 trong 2 đang chạy là hiện
     const shouldBeLoading = this.apiRequestCount > 0 || this.isRouterLoading;
 
     if (shouldBeLoading) {
@@ -79,46 +77,47 @@ export class LoadingService {
   }
 
   private forceShow() {
-    // Nếu đã hiện rồi thì thôi, không reset timer (trừ max timer)
+    // Nếu đang hiện rồi thì thôi, chỉ hủy lệnh tắt nếu có
     if (this.isVisible()) {
-        // Chỉ reset lệnh tắt (nếu đang chờ tắt)
-        clearTimeout(this.minDisplayTimer);
+        if (this.minDisplayTimer) {
+            clearTimeout(this.minDisplayTimer);
+            this.minDisplayTimer = null;
+        }
         return;
     }
 
+    // Clear hết timer cũ
     clearTimeout(this.minDisplayTimer);
     clearTimeout(this.maxDisplayTimer);
 
+    // HIỆN NGAY LẬP TỨC
     this.isVisible.set(true);
 
-    // Safety Net: Tự tắt sau 10s
+    // Safety: Tự tắt sau 10s
     this.maxDisplayTimer = setTimeout(() => {
       this.resetAll();
     }, this.MAX_DISPLAY_TIME);
   }
 
   private gracefulHide() {
-    // Nếu đang không hiện thì thôi
     if (!this.isVisible()) return;
 
-    // Nếu đang chờ tắt rồi thì thôi
+    // Nếu đã có lệnh chờ tắt rồi thì không đặt lại nữa (tránh bị delay thêm)
     if (this.minDisplayTimer) return;
 
-    // Hẹn giờ tắt (để đảm bảo hiệu ứng mượt)
+    // QUAN TRỌNG: Dù trang đã load xong, vẫn chờ hết MIN_DISPLAY_TIME mới tắt
+    // Giúp mắt người dùng kịp nhìn thấy thanh bar chạy
     this.minDisplayTimer = setTimeout(() => {
       this.resetAll();
     }, this.MIN_DISPLAY_TIME);
   }
 
   private resetAll() {
-    clearTimeout(this.routerDebounceTimer);
     clearTimeout(this.minDisplayTimer);
     clearTimeout(this.maxDisplayTimer);
-    this.minDisplayTimer = null; // Reset biến check
+    this.minDisplayTimer = null;
 
     this.isVisible.set(false);
-
-    // Reset luôn state nội bộ để tránh lệch pha
     this.apiRequestCount = 0;
     this.isRouterLoading = false;
   }

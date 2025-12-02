@@ -667,38 +667,138 @@ get containerClass() {
 }
 ```
 
-### ### Add Loading Bar and Skeleton
+### Add Loading Bar and Skeleton
 
-- create loading service:
+1. create loading service:
 
 ```ts
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, inject } from '@angular/core';
+import { Router, NavigationStart, NavigationEnd, NavigationCancel, NavigationError } from '@angular/router';
 
 @Injectable({
   providedIn: 'root'
 })
 export class LoadingService {
-  // Signal: Tự động cập nhật UI khi giá trị thay đổi
-  isLoading = signal<boolean>(false);
+  private router = inject(Router);
 
-  private requestCount = 0;
+  // --- CONFIG ---
+  // Đặt về 0 để hiện NGAY LẬP TỨC khi bấm chuyển trang
+  private readonly ROUTER_DEBOUNCE = 80;
 
-  show() {
-    this.requestCount++;
-    this.isLoading.set(true);
+  // Thời gian hiển thị tối thiểu (ms).
+  // Dù trang load xong trong 1ms, thanh bar vẫn sẽ hiện trong 500ms rồi mới tắt.
+  private readonly MIN_DISPLAY_TIME = 500;
+
+  private readonly MAX_DISPLAY_TIME = 10000; // Tự tắt sau 10s
+
+  // --- STATE ---
+  readonly isVisible = signal<boolean>(false);
+
+  // Logic nội bộ
+  private apiRequestCount = 0;
+  private isRouterLoading = false;
+
+  // Timers
+  private routerDebounceTimer: any = null;
+  private minDisplayTimer: any = null;
+  private maxDisplayTimer: any = null;
+
+  constructor() {
+    this.listenToRouter();
   }
 
-  hide() {
-    this.requestCount--;
-    if (this.requestCount <= 0) {
-      this.requestCount = 0;
-      this.isLoading.set(false);
+  // --- API METHODS ---
+  apiStart() {
+    this.apiRequestCount++;
+    this.updateState();
+  }
+
+  apiEnd() {
+    this.apiRequestCount--;
+    if (this.apiRequestCount < 0) this.apiRequestCount = 0;
+    this.updateState();
+  }
+
+  // --- PRIVATE LOGIC ---
+
+  private listenToRouter() {
+    this.router.events.subscribe(event => {
+      if (event instanceof NavigationStart) {
+        // Khi bắt đầu chuyển trang -> Bật Loading NGAY (vì debounce = 0)
+        this.isRouterLoading = true;
+        this.updateState();
+      }
+
+      if (event instanceof NavigationEnd ||
+          event instanceof NavigationCancel ||
+          event instanceof NavigationError) {
+
+        this.isRouterLoading = false;
+        this.updateState();
+      }
+    });
+  }
+
+  private updateState() {
+    // Chỉ cần 1 trong 2 đang chạy là hiện
+    const shouldBeLoading = this.apiRequestCount > 0 || this.isRouterLoading;
+
+    if (shouldBeLoading) {
+      this.forceShow();
+    } else {
+      this.gracefulHide();
     }
+  }
+
+  private forceShow() {
+    // Nếu đang hiện rồi thì thôi, chỉ hủy lệnh tắt nếu có
+    if (this.isVisible()) {
+        if (this.minDisplayTimer) {
+            clearTimeout(this.minDisplayTimer);
+            this.minDisplayTimer = null;
+        }
+        return;
+    }
+
+    // Clear hết timer cũ
+    clearTimeout(this.minDisplayTimer);
+    clearTimeout(this.maxDisplayTimer);
+
+    // HIỆN NGAY LẬP TỨC
+    this.isVisible.set(true);
+
+    // Safety: Tự tắt sau 10s
+    this.maxDisplayTimer = setTimeout(() => {
+      this.resetAll();
+    }, this.MAX_DISPLAY_TIME);
+  }
+
+  private gracefulHide() {
+    if (!this.isVisible()) return;
+
+    // Nếu đã có lệnh chờ tắt rồi thì không đặt lại nữa (tránh bị delay thêm)
+    if (this.minDisplayTimer) return;
+
+    // QUAN TRỌNG: Dù trang đã load xong, vẫn chờ hết MIN_DISPLAY_TIME mới tắt
+    // Giúp mắt người dùng kịp nhìn thấy thanh bar chạy
+    this.minDisplayTimer = setTimeout(() => {
+      this.resetAll();
+    }, this.MIN_DISPLAY_TIME);
+  }
+
+  private resetAll() {
+    clearTimeout(this.minDisplayTimer);
+    clearTimeout(this.maxDisplayTimer);
+    this.minDisplayTimer = null;
+
+    this.isVisible.set(false);
+    this.apiRequestCount = 0;
+    this.isRouterLoading = false;
   }
 }
 ```
 
-- Create loading interceptor to automatically trigger Loading Service when calling API and register this interceptor in app.config.ts
+2. Create loading interceptor to automatically trigger Loading Service when calling API and register this interceptor in app.config.ts
 
 ```ts
 import { HttpInterceptorFn } from '@angular/common/http';
@@ -706,28 +806,27 @@ import { inject } from '@angular/core';
 import { finalize } from 'rxjs';
 import { LoadingService } from '../service/loading.service';
 
-
-export const LoadingInterceptor: HttpInterceptorFn = (req, next) => {
+export const loadingInterceptor: HttpInterceptorFn = (req, next) => {
   const loadingService = inject(LoadingService);
 
-  // (Optional) Bỏ qua loading nếu request có header 'X-Skip-Loading'
+  // Bỏ qua nếu có header đặc biệt
   if (req.headers.has('X-Skip-Loading')) {
     return next(req);
   }
 
-  // 1. Bật Loading
-  loadingService.show();
+  // 1. Báo Service bắt đầu
+  loadingService.apiStart();
 
   return next(req).pipe(
-    // 2. Tắt Loading khi xong (dù thành công hay lỗi)
+    // 2. Báo Service kết thúc (thành công hay lỗi đều chạy)
     finalize(() => {
-      loadingService.hide();
+      loadingService.apiEnd();
     })
   );
 };
 ```
 
-- Register the Interceptor in app.config.ts
+3. Register the Interceptor in app.config.ts
 
 ```ts
  
@@ -746,37 +845,43 @@ export const appConfig: ApplicationConfig = {
 
 ```
 
-- in app.layout.ts add a loading bar and style to it :
+4. in app.layout.ts add a loading bar and style to it :
 
 ```ts
 @Component({
     selector: 'app-layout',
     standalone: true,
-    imports: [CommonModule, AppTopbar, AppSidebar, RouterModule, AppFooter, ProgressBar],
+    imports: [CommonModule, AppTopbar, AppSidebar, RouterModule, AppFooter],
     styles: [`
-        .layout-loading-bar {
+        /* CSS cho thanh Loading Bar mượt mà */
+        .loading-bar {
+            height: 3px;
+            width: 100%;
+            /* Gradient màu xanh hiện đại */
+            background: linear-gradient(90deg, #3B82F6, #06B6D4);
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            z-index: 99999; /* Cao hơn tất cả */
-            height: 3px;
+            z-index: 99999; /* Luôn nổi trên cùng */
+
+            /* Hiệu ứng mờ dần và co dãn */
+            opacity: 0;
+            transform: scaleX(0);
+            transform-origin: left center;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+
+            /* Cho phép click xuyên qua khi đang fade-out */
+            pointer-events: none;
         }
-        /* Force style cho ProgressBar */
-        :host ::ng-deep .p-progressbar {
-            height: 3px !important;
-            border-radius: 0 !important;
-        }
-        :host ::ng-deep .p-progressbar .p-progressbar-value {
-            background: var(--primary-color) !important;
+        /* Class kích hoạt hiển thị */
+        .loading-bar.show {
+            opacity: 1;
+            transform: scaleX(1);
         }
     `],
-    template: `<div class="layout-wrapper" [ngClass]="containerClass">
-        <!-- Loading Bar (ngx-admin style) -->
-        <div class="layout-loading-bar"
-            [style.display]="(loadingService.isLoading() || isRouterLoading) ? 'block' : 'none'">
-            <p-progressBar mode="indeterminate" [style]="{'height': '4px'}"></p-progressBar>
-        </div>
+    template: `
+    <div class="loading-bar" [class.show]="loadingService.isVisible()"></div>
+    <div class="layout-wrapper" [ngClass]="containerClass">
         <app-topbar></app-topbar>
         <app-sidebar></app-sidebar>
         <div class="layout-main-container">
@@ -789,3 +894,100 @@ export const appConfig: ApplicationConfig = {
     </div> `
 })
 ```
+
+```ts
+    constructor(
+        public layoutService: LayoutService,
+        public renderer: Renderer2,
+        public router: Router,
+        public loadingService: LoadingService
+    ) {
+        this.overlayMenuOpenSubscription = this.layoutService.overlayOpen$.subscribe(() => {
+            if (!this.menuOutsideClickListener) {
+                this.menuOutsideClickListener = this.renderer.listen('document', 'click', (event) => {
+                    if (this.isOutsideClicked(event)) {
+                        this.hideMenu();
+                    }
+                });
+            }
+
+            if (this.layoutService.layoutState().staticMenuMobileActive) {
+                this.blockBodyScroll();
+            }
+        });
+
+        // ẩn Menu khi chuyển trang
+        this.router.events.pipe(filter((event) => event instanceof NavigationEnd)).subscribe(() => {
+            this.hideMenu();
+        });
+    }
+```
+5. Local Skeleton & State Manager (Xử lý từng Form):
+
+- create skeleton-state.ts in src/app/core/utils:
+
+```ts
+import { signal, computed } from '@angular/core';
+import { Observable, finalize } from 'rxjs';
+
+export class SkeletonState<T> {
+  // Data gốc
+  private _data = signal<T[] | undefined>(undefined);
+  private _loading = signal<boolean>(false);
+  private _skeletonVisible = signal<boolean>(false);
+  private timerId: any;
+
+  // PUBLIC READONLY
+  readonly data = this._data.asReadonly();
+  readonly loading = this._loading.asReadonly();
+
+  // Logic: Chỉ hiện Skeleton nếu _skeletonVisible = true VÀ chưa có data
+  readonly showSkeleton = computed(() => this._skeletonVisible() && this._data() === undefined);
+
+  // Logic: Hiện Spinner trong bảng nếu đang load VÀ đã có data
+  readonly showSpinner = computed(() => this._loading() && this._data() !== undefined);
+
+  /**
+   * Load dữ liệu với Skeleton tự động
+   * @param apiCall$ Observable API
+   * @param gracePeriod Thời gian chờ (ms) trước khi bật skeleton (mặc định 300ms)
+   */
+  load(apiCall$: Observable<T[]>, gracePeriod: number = 300) {
+    this._loading.set(true);
+
+    // Grace Period: Nếu API nhanh hơn 300ms thì KHÔNG hiện skeleton
+    this.timerId = setTimeout(() => {
+      if (this._data() === undefined) {
+          this._skeletonVisible.set(true);
+      }
+    }, gracePeriod);
+
+    apiCall$.pipe(
+      finalize(() => {
+        this._loading.set(false);
+        this.clearSkeletonTimer();
+      })
+    ).subscribe({
+      next: (res) => this._data.set(res),
+      error: (err) => {
+        console.error(err);
+        if (this._data() === undefined) this._data.set([]); // Set rỗng để tắt skeleton
+      }
+    });
+  }
+
+  reset() {
+      this._data.set(undefined);
+      this.clearSkeletonTimer();
+  }
+
+  private clearSkeletonTimer() {
+      if (this.timerId) clearTimeout(this.timerId);
+      this._skeletonVisible.set(false);
+  }
+}
+```
+
+
+
+
