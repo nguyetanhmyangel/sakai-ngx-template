@@ -546,48 +546,6 @@ get containerClass() {
 /* ============================================================
    3. MOBILE FIX (DƯỚI 992px)
    ============================================================ */
-// @media screen and (max-width: 991px) {
-
-//     /* Trả lại Sidebar Full chuẩn cho Mobile */
-//     .layout-wrapper.layout-sidebar-compact .layout-sidebar {
-//         width: 18rem !important; /* Khớp với độ rộng desktop mở rộng */
-//         top: 0 !important; /* Mobile thì Sidebar full từ đỉnh */
-//         height: 100vh !important;
-//         transform: translateX(-100%); /* Mặc định ẩn sang trái */
-//         background-color: var(--surface-overlay);
-//         border-right: none;
-//     }
-
-//     /* Khi active mobile: Hiện lên trên cùng (che cả topbar mobile nếu cần) */
-//     .layout-wrapper.layout-mobile-active .layout-sidebar {
-//         transform: translateX(0) !important;
-//         z-index: 1101 !important; /* Mobile thì cần đè lên Mask (1100) */
-//     }
-
-//     /* Mask (lớp phủ đen) */
-//     .layout-mask {
-//         z-index: 1100 !important;
-//     }
-
-//     /* Reset margin của nội dung */
-//     .layout-wrapper.layout-sidebar-compact .layout-main-container {
-//         margin-left: 0 !important;
-//     }
-
-//     /* Ép hiển thị lại nội dung text */
-//     .layout-wrapper.layout-sidebar-compact .layout-sidebar .layout-menuitem-text,
-//     .layout-wrapper.layout-sidebar-compact .layout-sidebar .layout-submenu-toggler,
-//     .layout-wrapper.layout-sidebar-compact .layout-sidebar .layout-menuitem-root-text,
-//     .layout-wrapper.layout-sidebar-compact .layout-sidebar .sidebar-logo span {
-//         display: inline-block !important;
-//         opacity: 1 !important;
-//     }
-
-//     .layout-wrapper.layout-sidebar-compact .layout-sidebar .layout-menu ul li a {
-//         justify-content: flex-start !important;
-//         padding: 0.75rem 1rem !important;
-//     }
-// }
 
 @media screen and (max-width: 991px) {
 
@@ -665,6 +623,8 @@ get containerClass() {
         padding-left: 1.4rem !important; /* Padding chuẩn mobile */
     }
 }
+
+
 ```
 
 ### Add Loading Bar and Skeleton
@@ -987,6 +947,8 @@ export class SkeletonState<T> {
   }
 }
 ```
+
+
 
 
 
