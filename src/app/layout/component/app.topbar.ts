@@ -61,19 +61,38 @@ import { LayoutService } from '../service/layout.service';
                 </div>
             </div>
 
-            <button class="layout-topbar-menu-button layout-topbar-action" pStyleClass="@next" enterFromClass="hidden" enterActiveClass="animate-scalein" leaveToClass="hidden" leaveActiveClass="animate-fadeout" [hideOnOutsideClick]="true">
+            <button class="layout-topbar-menu-button" pStyleClass="@next" enterFromClass="hidden" enterActiveClass="animate-scalein" leaveToClass="hidden" leaveActiveClass="animate-fadeout" [hideOnOutsideClick]="true">
                 <i class="pi pi-ellipsis-v"></i>
             </button>
 
             <div class="layout-topbar-menu hidden lg:block">
                 <div class="layout-topbar-menu-content">
-                    <button type="button" class="layout-topbar-action">
-                        <i class="pi pi-calendar"></i>
-                        <span>Calendar</span>
+                    <!-- Việt Nam -->
+                    <button
+                        type="button"
+                        class="layout-topbar-action"
+                        pTooltip="Tiếng Việt"
+                        tooltipPosition="bottom">
+                        <span class="fi fi-vn fis"></span>
+                        <span class="hidden xl:inline">Vietnamese</span>
                     </button>
-                    <button type="button" class="layout-topbar-action">
-                        <i class="pi pi-inbox"></i>
-                        <span>Messages</span>
+
+                    <!-- Nga -->
+                    <!-- <button
+                        type="button"
+                        class="layout-topbar-action flex align-items-center gap-2"
+                        pTooltip="Русский"
+                        tooltipPosition="bottom">
+                        <span class="fi fi-ru fis"></span>
+                        <span class="hidden xl:inline">Russia</span>
+                    </button> -->
+                    <button
+                        type="button"
+                        class="layout-topbar-action"
+                        pTooltip="Русский"
+                        tooltipPosition="bottom">
+                        <span class="fi fi-us fis"></span>
+                        <span class="hidden xl:inline">English</span>
                     </button>
                     <button type="button" class="layout-topbar-action">
                         <i class="pi pi-user"></i>

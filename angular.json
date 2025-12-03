@@ -32,7 +32,8 @@
                             }
                         ],
                         "styles": [
-                            "src/assets/styles.scss"
+                            "src/assets/styles.scss",
+                            "src/assets/layout/_flag.scss"
                         ],
                         "scripts": []
                     },
@@ -79,7 +80,8 @@
                             }
                         ],
                         "styles": [
-                            "src/assets/styles.scss"
+                            "src/assets/styles.scss",
+                            "src/assets/layout/_flag.scss"
                         ],
                         "scripts": []
                     }

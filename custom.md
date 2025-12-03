@@ -63,137 +63,272 @@
 }
 ```
 
-### In Utils.scss, add following css selector to modify scroll of sidebar and layout-main-container:
+### In Utils.scss, add following css selector to modify scroll of sidebar and layout-main-container, and add feature compact menu:
 
 ```css
-/* Sidebar: Nếu ở chế độ static thì không cần z-index cao */
-.layout-sidebar {
-    z-index: 996; /* Thấp hơn Topbar 1 đơn vị */
-    /* Các thuộc tính position/height để Sakai tự lo */
+p-toast.p-toast-top-right,
+.p-toast.p-toast-top-left,
+.p-toast.p-toast-top-center {
+    top: 100px;
+    z-index: 3000 !important; /* Đảm bảo Toast luôn cao nhất */
 }
 
-/* Ẩn thanh cuộn của body/html để tránh 2 thanh cuộn lồng nhau */
 html, body {
     overflow: hidden !important;
     height: 100vh;
     margin: 0;
 }
 
-/* ============================================================
-   2. CẤU HÌNH THANH CUỘN CHO LAYOUT CHÍNH (NẰM DƯỚI TOPBAR)
-   ============================================================ */
+/* ==========================================================================
+   2. TOPBAR & SIDEBAR Z-INDEX FIX (CHUẨN PRIMENG)
+   ========================================================================== */
 
-.layout-main-container {
-    /* Quan trọng: Tạo vùng cuộn riêng biệt */
-    height: 100vh;
-    overflow-y: auto;
-    overflow-x: hidden;
-
-    /* Đẩy nội dung xuống để không bị Topbar che mất */
-    /* Padding-top = Chiều cao Topbar (5rem) + Khoảng cách thêm (2rem) */
-    padding-top: 7rem;
-
-    /* Cài đặt Scrollbar SIÊU MỎNG (2px) cho Main Content */
-    scrollbar-width: thin;
-    scrollbar-color: rgba(160, 160, 160, 0.15) transparent;
+/* TOPBAR: Cao hơn Sidebar Desktop (998) nhưng thấp hơn Dialog (1100) */
+.layout-topbar {
+    position: fixed;
+    height: 5rem;
+    z-index: 999 !important; /* <--- CHỈNH LẠI CHỖ NÀY: 999 là đủ */
+    top: 0;
+    left: 0;
+    width: 100%;
+    /* Đảm bảo Topbar có nền để che nội dung khi cuộn qua */
+    background-color: var(--surface-card);
+    //box-shadow: 0px 3px 5px rgba(0,0,0,0.02);
 }
 
-
-/* ============================================================
-   GHOST SCROLLBAR (Siêu mỏng - Cực mờ - Không giật)
-   ============================================================ */
-/* Sidebar: Nếu ở chế độ static thì không cần z-index cao */
+/* SIDEBAR: Nằm dưới Topbar */
 .layout-sidebar {
-    z-index: 996; /* Thấp hơn Topbar 1 đơn vị */
-    /* Các thuộc tính position/height để Sakai tự lo */
+    z-index: 998 !important; /* <--- Thấp hơn Topbar 1 đơn vị */
+    top: 4.4rem !important;
+    height: 100vh !important;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Ẩn thanh cuộn của body/html để tránh 2 thanh cuộn lồng nhau */
-html, body {
-    overflow: hidden !important;
-    height: 100vh;
-    margin: 0;
-}
-
-/* ============================================================
-   2. CẤU HÌNH THANH CUỘN CHO LAYOUT CHÍNH (NẰM DƯỚI TOPBAR)
-   ============================================================ */
-
-.layout-main-container {
-    /* Quan trọng: Tạo vùng cuộn riêng biệt */
-    height: 100vh;
-    overflow-y: auto;
-    overflow-x: hidden;
-
-    /* Đẩy nội dung xuống để không bị Topbar che mất */
-    /* Padding-top = Chiều cao Topbar (5rem) + Khoảng cách thêm (2rem) */
-    padding-top: 7rem;
-
-    /* Cài đặt Scrollbar SIÊU MỎNG (2px) cho Main Content */
-    scrollbar-width: thin;
-    scrollbar-color: rgba(160, 160, 160, 0.15) transparent;
-    /* Transition cho margin-left (đẩy ra/vào) và padding (khoảng hở) */
-    transition:
-        margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-        padding 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-}
-
-
-/* ============================================================
-   GHOST SCROLLBAR (Siêu mỏng - Cực mờ - Không giật)
-   ============================================================ */
-
-/* 1. Cấu hình cơ bản cho Container */
 .layout-main-container,
 .layout-sidebar {
-    /* Firefox: Chế độ mỏng nhất và tàng hình */
-    scrollbar-width: thin;
-    scrollbar-color: transparent transparent; /* Mặc định ẩn trên FF */
-
-    /* Cuộn mượt nội dung */
+    height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
     scroll-behavior: smooth;
+
+    /* Firefox */
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
 }
 
-/* 2. Webkit (Chrome, Edge, Safari) */
+/* Main Container padding để né Topbar */
+.layout-main-container {
+    padding-top: 7rem;
+    transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1), padding 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    /* Z-index thấp để scrollbar nằm dưới Topbar */
+    position: relative;
+    z-index: 1;
+}
 
-/* Thiết lập kích thước cố định - KHÔNG ĐỔI width khi hover để tránh layout shift (giật) */
+/* Hover hiện màu (Firefox) */
+.layout-main-container:hover,
+.layout-sidebar:hover {
+    scrollbar-color: rgba(160, 160, 160, 0.4) transparent;
+}
+
+/* Webkit (Chrome/Edge) */
 .layout-main-container::-webkit-scrollbar,
 .layout-sidebar::-webkit-scrollbar {
-    width: 3px !important;    /* 3px là cân bằng nhất: đủ mỏng nhưng vẫn kéo được */
-    height: 3px !important;   /* Cho thanh ngang */
-    background-color: transparent; /* Track luôn trong suốt */
+    width: 6px !important;
+    height: 6px !important;
 }
 
-/* Track (nền) tuyệt đối trong suốt */
 .layout-main-container::-webkit-scrollbar-track,
 .layout-sidebar::-webkit-scrollbar-track {
     background: transparent;
 }
 
-/* --- TRẠNG THÁI 1: MẶC ĐỊNH (Gần như vô hình) --- */
-/* Sử dụng rgba thay vì opacity để kiểm soát tốt hơn */
 .layout-main-container::-webkit-scrollbar-thumb,
 .layout-sidebar::-webkit-scrollbar-thumb {
-    /* Màu xám trung tính, độ trong suốt cực thấp (0.05) */
-    background-color: rgba(160, 160, 160, 0.05);
+    background-color: transparent; /* Tàng hình */
     border-radius: 10px;
-
-    /* QUAN TRỌNG: Bỏ transition đi vì Webkit không hỗ trợ, để tránh browser tính toán sai gây lag */
 }
 
-/* --- TRẠNG THÁI 2: HOVER VÀO CONTAINER (Hiện mờ mờ) --- */
-/* Chỉ tăng độ đậm lên rất nhẹ (từ 0.05 lên 0.15) -> Mắt sẽ thấy nó "hiện" ra rất êm */
+/* Hover Container -> Hiện Thumb mờ */
 .layout-main-container:hover::-webkit-scrollbar-thumb,
 .layout-sidebar:hover::-webkit-scrollbar-thumb {
-    background-color: rgba(160, 160, 160, 0.15);
+    background-color: rgba(160, 160, 160, 0.2);
 }
 
-/* --- TRẠNG THÁI 3: HOVER VÀO THANH CUỘN (Muốn kéo) --- */
-/* Tăng thêm chút xíu nữa để người dùng biết đã trúng đích (từ 0.15 lên 0.25) */
-/* Tuyệt đối không để quá đậm (ví dụ 0.8) để tránh hiệu ứng "nhảy màu" */
+/* Hover Scrollbar -> Hiện Thumb đậm */
 .layout-main-container::-webkit-scrollbar-thumb:hover,
 .layout-sidebar::-webkit-scrollbar-thumb:hover {
-    background-color: rgba(160, 160, 160, 0.35) !important;
+    background-color: rgba(160, 160, 160, 0.6);
+}
+
+/* ==========================================================================
+   4. RESET SCROLLBAR CHO COMPONENT CON (GIỮ NGUYÊN)
+   ========================================================================== */
+
+.layout-main-container *,
+.layout-sidebar * {
+    scrollbar-width: auto !important;
+    scrollbar-color: auto !important;
+}
+
+.layout-main-container *::-webkit-scrollbar,
+.layout-sidebar *::-webkit-scrollbar {
+    width: 10px !important;
+    height: 10px !important;
+    background-color: transparent;
+}
+
+.layout-main-container *::-webkit-scrollbar-track,
+.layout-sidebar *::-webkit-scrollbar-track {
+    background-color: #f8f9fa;
+}
+
+.layout-main-container *::-webkit-scrollbar-thumb,
+.layout-sidebar *::-webkit-scrollbar-thumb {
+    background-color: #bdc3c7;
+    border-radius: 6px;
+    border: 2px solid #f8f9fa;
+}
+
+.layout-main-container *::-webkit-scrollbar-thumb:hover,
+.layout-sidebar *::-webkit-scrollbar-thumb:hover {
+    background-color: #95a5a6;
+}
+
+/* ==========================================================================
+   5. LOGIC LAYOUT COMPACT & MOBILE
+   ========================================================================== */
+
+/* DESKTOP COMPACT (>= 992px) */
+@media screen and (min-width: 992px) {
+    .layout-wrapper.layout-sidebar-compact .layout-sidebar {
+        width: 60px !important;
+        padding: 0;
+        overflow: hidden;
+        border-right: 1px solid var(--surface-border);
+        transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 998 !important; /* Vẫn giữ 998 */
+        top: 4.4rem !important;
+        height: calc(100vh - 5rem) !important;
+    }
+
+    .layout-wrapper.layout-sidebar-compact .layout-main-container {
+        margin-left: 60px !important;
+        padding: 7rem 1.4rem 0 2rem !important;
+    }
+
+    /* Ẩn hiện Text Menu  */
+    .layout-wrapper.layout-sidebar-compact .layout-sidebar .layout-menuitem-text,
+    .layout-wrapper.layout-sidebar-compact .layout-sidebar .layout-submenu-toggler,
+    .layout-wrapper.layout-sidebar-compact .layout-sidebar .layout-menuitem-root-text,
+    .layout-wrapper.layout-sidebar-compact .layout-sidebar .sidebar-logo span {
+        display: none; /* Ẩn hoàn toàn để không chiếm chỗ */
+    }
+
+    .layout-wrapper.layout-sidebar-compact .layout-sidebar .layout-menu ul li a {
+        padding-left: 0; padding-right: 0; justify-content: center; height: 45px;
+    }
+    .layout-wrapper.layout-sidebar-compact .layout-sidebar .layout-menu ul li a .layout-menuitem-icon {
+        margin-right: 0 !important; font-size: 1.4rem;
+    }
+
+    /* HOVER OPEN SIDEBAR */
+    .layout-wrapper.layout-sidebar-compact .layout-sidebar:hover {
+        width: 20rem !important;
+        box-shadow: 10px 0 30px rgba(0, 0, 0, 0.1);
+        overflow-y: auto !important;
+        //z-index: 1001 !important; /* Khi hover mở rộng thì cho đè lên layout */
+    }
+
+    /* 2. TRẠNG THÁI HIỆN (Khi hover vào sidebar) */
+    .layout-wrapper.layout-sidebar-compact .layout-sidebar:hover .layout-menuitem-text,
+    .layout-wrapper.layout-sidebar-compact .layout-sidebar:hover .layout-submenu-toggler,
+    .layout-wrapper.layout-sidebar-compact .layout-sidebar:hover .sidebar-logo span {
+        /* Hiện lại */
+        display: inline-block !important;
+
+        /* Animation mờ dần */
+        opacity: 0;
+        animation: fadeIn 0.2s forwards;
+        transition-delay: 0.1s;
+
+        /* --- QUAN TRỌNG NHẤT: CHỐNG XUỐNG DÒNG --- */
+        white-space: nowrap !important;
+
+        /* Đảm bảo text không bị tính width sai */
+        width: auto !important;
+        pointer-events: auto;
+    }
+
+    /* Riêng Root Text (Tiêu đề nhóm) cần display block */
+    .layout-wrapper.layout-sidebar-compact .layout-sidebar:hover .layout-menuitem-root-text {
+        display: block !important;
+        white-space: nowrap !important; /* Chống xuống dòng cho tiêu đề */
+        opacity: 0;
+        padding-left: 1rem;
+        margin-top: 1rem;
+        animation: fadeIn 0.2s forwards;
+    }
+
+    .layout-wrapper.layout-sidebar-compact .layout-sidebar:hover .layout-menuitem-root-text {
+        display: block !important; opacity: 1; padding-left: 1rem; margin-top: 1rem; animation: fadeIn 0.2s forwards;
+    }
+    .layout-wrapper.layout-sidebar-compact .layout-sidebar:hover .layout-menu ul li a {
+        justify-content: flex-start; padding: 0.75rem 1rem; height: auto;
+    }
+    .layout-wrapper.layout-sidebar-compact .layout-sidebar:hover .layout-menu ul li a .layout-menuitem-icon {
+        margin-right: 0.5rem !important;
+    }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateX(-5px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+/* MOBILE (<= 991px) */
+@media screen and (max-width: 991px) {
+    .layout-sidebar {
+        top: 0 !important;
+        height: 100vh !important;
+        /* Mobile Sidebar phải cao hơn Topbar (999) và Mask (1100) */
+        z-index: 1101 !important;
+        transform: translateX(-100%);
+        left: 0 !important;
+        width: 18rem !important;
+        border-right: none; box-shadow: none;
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .layout-wrapper.layout-mobile-active .layout-sidebar {
+        transform: translateX(0) !important;
+        box-shadow: 0 0 50px rgba(0,0,0,0.5);
+    }
+
+    /* Lớp phủ đen */
+    .layout-mask {
+        z-index: 1100 !important; /* Cao hơn Topbar (999) nhưng thấp hơn Sidebar (1101) */
+        background-color: rgba(0, 0, 0, 0.4);
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    }
+
+    /* Reset Compact Logic */
+    .layout-wrapper.layout-sidebar-compact .layout-sidebar {
+        width: 18rem !important; background-color: var(--surface-overlay); overflow-y: auto !important;
+    }
+    .layout-wrapper.layout-sidebar-compact .layout-sidebar .layout-menuitem-text,
+    .layout-wrapper.layout-sidebar-compact .layout-sidebar .layout-submenu-toggler,
+    .layout-wrapper.layout-sidebar-compact .layout-sidebar .layout-menuitem-root-text,
+    .layout-wrapper.layout-sidebar-compact .layout-sidebar .sidebar-logo span {
+        display: inline-block !important; opacity: 1 !important; width: auto !important; pointer-events: auto !important;
+    }
+    .layout-wrapper.layout-sidebar-compact .layout-sidebar .layout-menu ul li a {
+        justify-content: flex-start !important; padding: 0.75rem 1rem !important;
+    }
+    .layout-main-container,
+    .layout-wrapper.layout-sidebar-compact .layout-main-container {
+        margin-left: 0 !important; padding-left: 1.4rem !important;
+    }
 }
 
 ```
@@ -372,7 +507,7 @@ get containerClass() {
             white-space: nowrap; /* Cấm xuống dòng tuyệt đối */
             overflow: hidden;    /* Ẩn phần thừa */
 
-            /* Thêm transition cho padding nếu bạn có thay đổi padding khi co */
+            /* Thêm transition cho padding nếu có thay đổi padding khi co */
             transition:
                 background-color var(--element-transition-duration),
                 box-shadow var(--element-transition-duration),
@@ -949,7 +1084,57 @@ export class SkeletonState<T> {
 ```
 
 
+### . Remove message, inbox icon, add flag icon
 
+- remove flag folder in assets/demo
+- remove line @use './demo/demo.scss'; in src/assets/styles.scss
+- add 1 file _flag.scss in src/assets/layout: 
+
+```ts
+@import 'https://cdn.jsdelivr.net/npm/flag-icons@7.2.3/css/flag-icons.min.css';
+```
+
+- Edit angular.json → add this lines to styles array:
+
+```ts
+"styles": [
+    "src/assets/styles.scss",
+    "src/assets/layout/_flag.scss"
+]
+```
+- install flag-icons: 
+
+```bash
+npm install flag-icons 
+// or 
+yarn add flag-icons
+```
+
+- add flag button
+
+```html
+<!-- Việt Nam -->
+<button
+    type="button"
+    class="layout-topbar-action flex align-items-center gap-2"
+    (click)="changeLang('vi')"
+    [class.highlighted]="activeLang === 'vi'"
+    pTooltip="Tiếng Việt"
+    tooltipPosition="bottom">
+    <span class="fi fi-vn fis"></span>
+    <span class="hidden xl:inline">Vietnamese</span>
+</button>
+
+<!-- English -->
+<button
+    type="button"
+    class="layout-topbar-action layout-topbar-action-highlight"
+    pTooltip="Русский"
+    tooltipPosition="bottom">
+    <span class="fi fi-us fis"></span>
+    <span class="hidden xl:inline">English</span>
+</button>
+```
 
 
 

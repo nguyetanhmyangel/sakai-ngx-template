@@ -82,7 +82,7 @@
             white-space: nowrap; /* Cấm xuống dòng tuyệt đối */
             overflow: hidden;    /* Ẩn phần thừa */
 
-            /* Thêm transition cho padding nếu bạn có thay đổi padding khi co */
+            /* Thêm transition cho padding nếu có thay đổi padding khi co */
             transition:
                 background-color var(--element-transition-duration),
                 box-shadow var(--element-transition-duration),
